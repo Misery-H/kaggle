@@ -41,13 +41,27 @@ Validate a candidate submission before uploading:
 uv run python scripts/validate_submission.py outputs/rogii_lb7201_public_gold_conservative/submission.csv
 ```
 
-Submit a validated candidate:
+This is a code competition. Kaggle rejects direct CSV uploads with
+`Submission not allowed: This competition only accepts Submissions from Notebooks`.
+Prepare and push a Kaggle notebook package, wait for it to complete, then submit
+one of its output files:
 
 ```powershell
 $env:KAGGLE_CONFIG_DIR = (Get-Location).Path
+$env:PYTHONUTF8 = "1"
+uv run python scripts/prepare_kernel_submit.py `
+  --source-dir baselines/rogii_lb7201_public_gold_conservative `
+  --code-file rogii-lb7201-public-gold-conservative.ipynb `
+  --slug rogii-lb7201-public-gold-conservative-codex `
+  --title "ROGII LB7201 Public Gold Conservative Codex" `
+  --out-dir .kaggle_submit_7201
+uv run kaggle kernels push -p .kaggle_submit_7201
+uv run kaggle kernels status sumo1290/rogii-lb7201-public-gold-conservative-codex
 uv run kaggle competitions submit rogii-wellbore-geology-prediction `
-  -f outputs/rogii_lb7201_public_gold_conservative/submission.csv `
-  -m "public 7.201 conservative baseline"
+  -k sumo1290/rogii-lb7201-public-gold-conservative-codex `
+  -v 1 `
+  -f submission.csv `
+  -m "public 7.201 conservative notebook baseline"
 ```
 
 ## Kaggle GPU smoke test

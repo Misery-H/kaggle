@@ -48,6 +48,10 @@ For the current downloaded data bundle:
 
 The validator script in this repository checks column order, row count, id order, numeric `tvt`, and finite predictions.
 
+Kaggle currently accepts this competition's submissions only from notebooks, not
+by direct CSV upload. The local CSV validator is still useful for checking a
+candidate output before packaging it in a Kaggle notebook.
+
 ## Score Target
 
 The requested target is `7.2` public-LB-level RMSE. As of the leaderboard snapshot retrieved on 2026-06-20, the public leaderboard top scores are below `6.0`, and public notebooks around `7.201` are available. That means `7.2` is a realistic public-score target, but it still requires a stronger approach than the existing `9.251` DWT baseline.
