@@ -104,8 +104,8 @@ def main() -> int:
         out, report = make_variant(base, args.data_root, blend, args.degree)
         out_path = args.out_dir / f"submission_contact_smoother_{label}.csv"
         report_path = args.out_dir / f"contact_smoother_{label}_report.csv"
-        out.to_csv(out_path, index=False)
-        report.to_csv(report_path, index=False)
+        out.to_csv(out_path, index=False, lineterminator="\n")
+        report.to_csv(report_path, index=False, lineterminator="\n")
         summary.append(
             {
                 "blend": float(blend),

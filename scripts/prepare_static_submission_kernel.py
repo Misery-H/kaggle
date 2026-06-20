@@ -21,7 +21,7 @@ def load_kaggle_username(config_dir: Path) -> str:
 
 
 def build_notebook(submission: Path, sample_path: str) -> dict[str, object]:
-    raw = submission.read_bytes()
+    raw = submission.read_text(encoding="utf-8").replace("\r\n", "\n").encode("utf-8")
     payload = base64.b64encode(zlib.compress(raw, level=9)).decode("ascii")
     source = f"""
 import base64
