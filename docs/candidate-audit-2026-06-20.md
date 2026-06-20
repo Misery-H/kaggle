@@ -29,8 +29,19 @@ Using the two official scores, the best possible point on only that line is abou
 ## Current Submission Budget
 
 The daily limit is five submissions. Two submissions have been used on
-2026-06-20, leaving three attempts. No additional submission was made during
-this audit pass.
+2026-06-20 before this audit pass.
+
+Additional records from this pass:
+
+- `53887425`: static `blend=0.05` smoother probe. Kaggle marked it complete
+  with no score and an incorrect-format error; the local CSV used CRLF line
+  endings, so the static packager now normalizes generated files to LF.
+- `53888080`: `kokinnwakashuu/rogii-light-u-smoother` rerun under the account as
+  `sumo1290/rogii-light-u-smoother-codex`; pending at the time this note was
+  written.
+
+That leaves at most one further attempt if Kaggle counts the invalid static
+record against the daily limit.
 
 ## Reusable Commands
 
