@@ -1,0 +1,27 @@
+ARG BASE_IMAGE=nvidia/cuda:12.8.1-cudnn-runtime-ubuntu22.04
+FROM ${BASE_IMAGE}
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_LINK_MODE=copy
+
+WORKDIR /workspace
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl git unzip \
+    && rm -rf /var/lib/apt/lists/* \
+    && curl -LsSf https://astral.sh/uv/install.sh | sh
+
+ENV PATH="/root/.local/bin:${PATH}" \
+    UV_PYTHON=3.12
+
+COPY pyproject.toml uv.lock* .python-version README.md ./
+RUN uv python install 3.12 \
+    && uv sync --python 3.12 --no-dev --extra gpu --no-install-project
+
+COPY scripts ./scripts
+COPY rogii ./rogii
+COPY baselines ./baselines
+
+CMD ["uv", "run", "python", "scripts/check_env.py", "--device", "auto", "--skip-kaggle"]

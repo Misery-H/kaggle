@@ -1,0 +1,23 @@
+.venv/
+.uv-cache/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Kaggle secrets and downloaded assets
+kaggle.json
+data/
+outputs/
+*.zip
+
+# Local generated Kaggle smoke-test package
+.kaggle_gpu_smoke/
+.kaggle_submit_*/
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

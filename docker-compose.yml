@@ -1,0 +1,39 @@
+services:
+  rogii-cpu:
+    profiles: ["cpu"]
+    build:
+      context: .
+      dockerfile: Dockerfile.cpu
+    image: rogii:cpu
+    working_dir: /workspace
+    volumes:
+      - ./data:/workspace/data
+      - ./outputs:/workspace/outputs
+      - ./kaggle.json:/workspace/kaggle.json:ro
+    environment:
+      KAGGLE_CONFIG_DIR: /workspace
+    command: ["uv", "run", "python", "scripts/check_env.py", "--device", "auto"]
+
+  rogii-gpu:
+    profiles: ["gpu"]
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu
+    image: rogii:gpu
+    working_dir: /workspace
+    volumes:
+      - ./data:/workspace/data
+      - ./outputs:/workspace/outputs
+      - ./kaggle.json:/workspace/kaggle.json:ro
+    environment:
+      KAGGLE_CONFIG_DIR: /workspace
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: ["gpu"]
+    command: ["uv", "run", "python", "scripts/check_env.py", "--device", "auto"]

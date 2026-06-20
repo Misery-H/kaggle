@@ -1,0 +1,17 @@
+.git/
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+kaggle.json
+data/
+outputs/
+*.zip
+.kaggle_gpu_smoke/
+
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
