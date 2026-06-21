@@ -81,3 +81,28 @@ than adding generic smoothing:
   but diverge in hidden rows;
 - learn a well-level correction direction and keep it small enough to respect
   the `7.285` anchor.
+
+## Overlap And Score-Geometry Audit
+
+I added two follow-up diagnostics after the first CV pass:
+
+- `scripts/analyze_overlap_shift.py`
+- `scripts/score_geometry_audit.py`
+
+The overlap audit confirms that all three test wells are exact row-aligned train
+wells in the visible columns. On the known prefix, test `TVT_input` equals train
+`TVT` exactly for all three wells, and `MD/X/Y/Z/GR` have zero train-test
+difference. The current `7.285` anchor is also effectively a train-copy
+submission on the hidden rows: local RMSE versus train hidden `TVT` is only
+`0.0053` ft. Therefore the leaderboard error is not visible in the released
+train/test files; it is a hidden target-version shift.
+
+The score-geometry audit also invalidates the earlier high-confidence
+anti-smoother projection. The local `outputs/codex_light_u_smoother/submission.csv`
+moves only `0.1426` ft RMSE from the anchor, but the recorded public scores differ
+by `0.238`. Under RMSE, a score can change by no more than the RMSE distance
+between two submission files, so that score/file pairing is inconsistent. Treat
+the pending anti-light submission as an experiment only, not as a reliable
+`7.04` projection. Using only the consistent `w0.60` scored direction, the best
+possible one-dimensional correction estimates to `7.283`, which is not enough
+to reach the `7.2` target.

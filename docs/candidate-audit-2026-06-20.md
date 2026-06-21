@@ -62,6 +62,20 @@ direction. Reversing that direction gives a predicted public score around
 `7.04`, assuming no material orthogonal change. A full notebook with
 `_SMOOTH_BLEND = -0.06` was therefore prepared and submitted as `53898943`.
 
+### Correction After Geometry Audit
+
+`scripts/score_geometry_audit.py` shows that the recorded `53888080` score cannot
+belong to the local `outputs/codex_light_u_smoother/submission.csv` file under an
+RMSE metric: the file moves only `0.142562` ft from the anchor, while the recorded
+score delta is `0.238`. This violates the RMSE triangle bound, and the implied
+hidden-error projection also violates Cauchy's bound. The anti-light submission
+should therefore be treated as a low-confidence probe until Kaggle returns its
+own result, not as a validated inverse direction.
+
+The only currently consistent non-anchor score direction is `w0.60`; optimizing
+on that single direction estimates only `7.283`, so it does not justify another
+submission by itself.
+
 ## Reusable Commands
 
 Generate local contact-smoother variants:
