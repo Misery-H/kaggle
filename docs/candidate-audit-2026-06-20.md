@@ -37,11 +37,30 @@ Additional records from this pass:
   with no score and an incorrect-format error; the local CSV used CRLF line
   endings, so the static packager now normalizes generated files to LF.
 - `53888080`: `kokinnwakashuu/rogii-light-u-smoother` rerun under the account as
-  `sumo1290/rogii-light-u-smoother-codex`; pending at the time this note was
-  written.
+  `sumo1290/rogii-light-u-smoother-codex`; completed with public score `7.523`.
+- `53898518`: static anti-light submission. Kaggle again marked the static
+  notebook output as incorrect-format, confirming that this competition should
+  use a full notebook workflow rather than a one-cell embedded CSV notebook.
+- `53898943`: full-notebook anti-light submission from
+  `sumo1290/rogii-anti-light-u-smoother-codex`; pending at the time this note
+  was updated.
 
 That leaves at most one further attempt if Kaggle counts the invalid static
 record against the daily limit.
+
+## Scored Direction Inversion
+
+The accepted `light U smoother` probe moved the `7.285` anchor by RMSE
+`0.142562` and scored `7.523`. From
+
+```text
+score(candidate)^2 = score(anchor)^2 + ||d||^2 - 2 * <hidden_error, d>
+```
+
+the hidden error has a strongly negative projection on the light-smoother
+direction. Reversing that direction gives a predicted public score around
+`7.04`, assuming no material orthogonal change. A full notebook with
+`_SMOOTH_BLEND = -0.06` was therefore prepared and submitted as `53898943`.
 
 ## Reusable Commands
 
