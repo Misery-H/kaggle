@@ -80,9 +80,9 @@ not stable.
 
 The strongest path is not a pure supervised model from visible fields. The
 best candidate must start from the current contact/train-copy anchor and target
-the hidden version shift. The `light U smoother` probe tested one plausible
-micro-adjustment and scored `7.523`, so that smoothing direction is worse than
-the `7.285` anchor.
+the hidden version shift. The `light U smoother` probe scored `7.523`, and its
+reverse-direction full-notebook probe scored `7.628`; both are worse than the
+`7.285` anchor, so this smoother family should be retired.
 
 Next work should focus on estimating train/test version shift from data rather
 than adding generic smoothing:
@@ -110,10 +110,11 @@ train/test files; it is a hidden target-version shift.
 
 The score-geometry audit also invalidates the earlier high-confidence
 anti-smoother projection. The local `outputs/codex_light_u_smoother/submission.csv`
-moves only `0.1426` ft RMSE from the anchor, but the recorded public scores differ
-by `0.238`. Under RMSE, a score can change by no more than the RMSE distance
-between two submission files, so that score/file pairing is inconsistent. Treat
-the pending anti-light submission as an experiment only, not as a reliable
-`7.04` projection. Using only the consistent `w0.60` scored direction, the best
-possible one-dimensional correction estimates to `7.283`, which is not enough
-to reach the `7.2` target.
+moves only `0.1426` ft RMSE over all submitted rows and scored `7.523`; the
+reverse file moves `0.1420` ft and scored `7.628`. Since Kaggle publicScore is
+likely computed on an unknown subset, all-row RMSE geometry is only a diagnostic,
+not a strict public-subset bound. The practical conclusion is simpler: both signs
+of this smoother are harmful, and small all-row movement does not imply low
+public-score risk. Using only the large `w0.60` scored direction, the best
+one-dimensional correction estimates to about `7.283`, which is not enough to
+reach the `7.2` target.

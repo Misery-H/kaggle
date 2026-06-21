@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 from pathlib import Path
 
 import numpy as np
@@ -43,79 +42,55 @@ def audit_scored_geometry(
 ) -> tuple[pd.DataFrame, dict[str, object]]:
     anchor = read_submission(anchor_path, sample)
     anchor_values = anchor["tvt"].to_numpy(dtype=float)
+    wells = sample["id"].astype(str).str[:8].to_numpy()
     rows: list[dict[str, object]] = []
-    valid_dirs: list[np.ndarray] = []
-    valid_names: list[str] = []
-    valid_scores: list[float] = []
 
     for name, path, score in scored:
         candidate = read_submission(path, sample)
         delta = candidate["tvt"].to_numpy(dtype=float) - anchor_values
         move_rmse = rmse(delta)
         score_delta = abs(float(score) - float(anchor_score))
-        triangle_margin = move_rmse - score_delta
-        projection = (anchor_score * anchor_score + move_rmse * move_rmse - score * score) / 2.0
-        cauchy_bound = anchor_score * move_rmse
-        cauchy_margin = cauchy_bound - abs(projection)
-        is_consistent = triangle_margin >= -tolerance and cauchy_margin >= -tolerance
-        rows.append(
-            {
-                "name": name,
-                "path": str(path),
-                "score": float(score),
-                "move_rmse_vs_anchor": move_rmse,
-                "abs_score_delta": score_delta,
-                "triangle_margin": triangle_margin,
-                "hidden_error_projection": projection,
-                "cauchy_bound": cauchy_bound,
-                "cauchy_margin": cauchy_margin,
-                "consistent_with_anchor_file": bool(is_consistent),
-            }
-        )
-        if is_consistent and move_rmse > 0:
-            valid_dirs.append(delta)
-            valid_names.append(name)
-            valid_scores.append(float(score))
+        abs_delta = np.abs(delta)
+        row = {
+            "name": name,
+            "path": str(path),
+            "score": float(score),
+            "score_delta_vs_anchor": float(score - anchor_score),
+            "abs_score_delta": score_delta,
+            "full_move_rmse_vs_anchor": move_rmse,
+            "full_move_mean_vs_anchor": float(np.mean(delta)),
+            "full_move_p95_abs_vs_anchor": float(np.quantile(abs_delta, 0.95)),
+            "full_move_p99_abs_vs_anchor": float(np.quantile(abs_delta, 0.99)),
+            "full_move_max_abs_vs_anchor": float(np.max(abs_delta)),
+            "full_rows_triangle_margin": move_rmse - score_delta,
+            "full_rows_triangle_warning": bool((move_rmse + tolerance) < score_delta),
+        }
+        for well in pd.unique(wells):
+            mask = wells == well
+            well_delta = delta[mask]
+            row[f"{well}_move_rmse"] = rmse(well_delta)
+            row[f"{well}_move_max_abs"] = float(np.max(np.abs(well_delta)))
+            row[f"{well}_move_mean"] = float(np.mean(well_delta))
+        rows.append(row)
 
     summary: dict[str, object] = {
         "anchor_path": str(anchor_path),
         "anchor_score": float(anchor_score),
-        "consistent_scored_candidates": valid_names,
-        "inconsistent_scored_candidates": [row["name"] for row in rows if not row["consistent_with_anchor_file"]],
+        "public_subset_note": (
+            "Kaggle publicScore may be computed on an unknown subset of submitted rows. "
+            "Triangle and projection checks over all submission rows are diagnostics only, "
+            "not strict proof that a score/file pairing is impossible on the public subset."
+        ),
+        "full_rows_triangle_warnings": [row["name"] for row in rows if row["full_rows_triangle_warning"]],
+        "best_scored_candidate": min(rows, key=lambda row: row["score"])["name"] if rows else None,
+        "worst_scored_candidate": max(rows, key=lambda row: row["score"])["name"] if rows else None,
     }
-
-    if valid_dirs:
-        dmat = np.vstack(valid_dirs).T
-        gram = dmat.T @ dmat / len(anchor_values)
-        b = np.array(
-            [
-                (anchor_score * anchor_score + gram[i, i] - valid_scores[i] * valid_scores[i]) / 2.0
-                for i in range(len(valid_scores))
-            ],
-            dtype=float,
-        )
-        try:
-            coeffs = np.linalg.solve(gram, b)
-        except np.linalg.LinAlgError:
-            coeffs = np.linalg.pinv(gram) @ b
-        pred_score_sq = anchor_score * anchor_score - float(b @ coeffs)
-        opt_delta = dmat @ coeffs
-        summary["span_fit"] = {
-            "names": valid_names,
-            "coefficients": {name: float(value) for name, value in zip(valid_names, coeffs)},
-            "predicted_best_score": math.sqrt(max(0.0, pred_score_sq)),
-            "move_rmse_vs_anchor": rmse(opt_delta),
-            "move_mean_vs_anchor": float(np.mean(opt_delta)),
-            "move_p95_abs_vs_anchor": float(np.quantile(np.abs(opt_delta), 0.95)),
-        }
-    else:
-        summary["span_fit"] = None
 
     return pd.DataFrame(rows), summary
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Check whether submitted scores are geometrically consistent with local files.")
+    parser = argparse.ArgumentParser(description="Audit scored ROGII candidates against all-row local movement.")
     parser.add_argument("--sample", type=Path, default=Path("data/raw/rogii-wellbore-geology-prediction/sample_submission.csv"))
     parser.add_argument("--anchor", type=Path, default=Path("outputs/codex_rogii_lb7201/submission.csv"))
     parser.add_argument("--anchor-score", type=float, default=7.285)
@@ -126,6 +101,7 @@ def main() -> int:
         default=[
             parse_scored_arg("w060=outputs/codex_rogii_w060/submission.csv=7.540"),
             parse_scored_arg("light=outputs/codex_light_u_smoother/submission.csv=7.523"),
+            parse_scored_arg("anti=outputs/codex_anti_light_u_smoother/submission.csv=7.628"),
         ],
         help="Scored candidate as name=path=score. Can be repeated.",
     )

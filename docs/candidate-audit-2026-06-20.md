@@ -42,38 +42,28 @@ Additional records from this pass:
   notebook output as incorrect-format, confirming that this competition should
   use a full notebook workflow rather than a one-cell embedded CSV notebook.
 - `53898943`: full-notebook anti-light submission from
-  `sumo1290/rogii-anti-light-u-smoother-codex`; pending at the time this note
-  was updated.
+  `sumo1290/rogii-anti-light-u-smoother-codex`; completed with public score
+  `7.628`.
 
 That leaves at most one further attempt if Kaggle counts the invalid static
 record against the daily limit.
 
-## Scored Direction Inversion
+## Smoother Direction Result
 
-The accepted `light U smoother` probe moved the `7.285` anchor by RMSE
-`0.142562` and scored `7.523`. From
+The accepted `light U smoother` probe moved the `7.285` anchor by only
+`0.142562` ft RMSE over the full submission file, but scored `7.523`. The
+full-notebook reverse probe, `anti light U smoother b-0.06`, moved a similar
+`0.141995` ft RMSE over the full file and scored even worse at `7.628`.
 
-```text
-score(candidate)^2 = score(anchor)^2 + ||d||^2 - 2 * <hidden_error, d>
-```
+This disproves the earlier inversion idea. The public score is likely computed
+on an unknown subset of rows, so all-row RMSE geometry is only a diagnostic; it
+cannot be used as a strict public-subset score bound. Empirically, both signs of
+the U-frame smoother are harmful, and the local all-row movement is too small to
+make reliable public-score projections. Do not spend more submissions on this
+smoother family.
 
-the hidden error has a strongly negative projection on the light-smoother
-direction. Reversing that direction gives a predicted public score around
-`7.04`, assuming no material orthogonal change. A full notebook with
-`_SMOOTH_BLEND = -0.06` was therefore prepared and submitted as `53898943`.
-
-### Correction After Geometry Audit
-
-`scripts/score_geometry_audit.py` shows that the recorded `53888080` score cannot
-belong to the local `outputs/codex_light_u_smoother/submission.csv` file under an
-RMSE metric: the file moves only `0.142562` ft from the anchor, while the recorded
-score delta is `0.238`. This violates the RMSE triangle bound, and the implied
-hidden-error projection also violates Cauchy's bound. The anti-light submission
-should therefore be treated as a low-confidence probe until Kaggle returns its
-own result, not as a validated inverse direction.
-
-The only currently consistent non-anchor score direction is `w0.60`; optimizing
-on that single direction estimates only `7.283`, so it does not justify another
+The only large, clean scored direction remains `w0.60`; optimizing on that
+single direction estimates only `7.283`, so it does not justify another
 submission by itself.
 
 ## Reusable Commands
