@@ -42,6 +42,17 @@ prefix rows only. Even then, train CV remains unrealistically near-perfect
 because the surface columns themselves encode the train-copy geometry. Treat
 this as a diagnostic, not as a trustworthy leaderboard estimate.
 
+Full train GroupKFold contact-residual CV, using every 10th hidden row:
+
+| Method | RMSE |
+| --- | ---: |
+| Prefix-calibrated contact reconstruction | `0.00871` |
+| LightGBM contact-residual model | `0.00552` |
+
+This is many orders of magnitude below the public `7.285` anchor score, which
+confirms that the surface/contact CV is measuring train-copy reconstruction
+rather than the hidden Kaggle target.
+
 ## Strict Visible-Field CV
 
 To get a non-leaky baseline, I added `scripts/train_prefix_delta_cv.py`. It uses
